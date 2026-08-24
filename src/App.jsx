@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -15,17 +15,56 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         <Route element={<MainLayout />}>
-          {/* Public pages */}
-          <Route path="/" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* =========================
+              FIRST PAGE
+          ========================== */}
 
-          {/* Protected pages */}
+          <Route
+            path="/"
+            element={<Navigate to="/register" replace />}
+          />
+
+          {/* =========================
+              PUBLIC PAGES
+          ========================== */}
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
+
+          {/* =========================
+              PUBLIC EXPLORE
+          ========================== */}
+
+          <Route
+            path="/explore"
+            element={<Explore />}
+          />
+
+          {/* =========================
+              PROTECTED PAGES
+          ========================== */}
+
           <Route element={<ProtectedRoute />}>
-            <Route path="/trips" element={<Trips />} />
+
+            <Route
+              path="/home"
+              element={<Home />}
+            />
+
+            <Route
+              path="/trips"
+              element={<Trips />}
+            />
 
             <Route
               path="/trips/:tripId"
@@ -36,8 +75,11 @@ function App() {
               path="/profile"
               element={<Profile />}
             />
+
           </Route>
+
         </Route>
+
       </Routes>
     </BrowserRouter>
   );

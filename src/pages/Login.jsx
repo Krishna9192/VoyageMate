@@ -41,20 +41,35 @@ function Login() {
       return;
     }
 
-    const result = await login(form.email, form.password);
+    const result = await login(
+      form.email,
+      form.password
+    );
 
     if (!result.success) {
       setError(result.message);
       return;
     }
 
-    const destination = location.state?.from || "/trips";
-    navigate(destination, { replace: true });
+    // If the user was redirected to login from
+    // a protected page, return them there.
+    // Otherwise go to the protected Home page.
+    const destination = location.state?.from || "/home";
+
+    navigate(destination, {
+      replace: true,
+    });
   };
 
   return (
     <div className="auth-page">
+
+      {/* ================================
+          LEFT VISUAL SECTION
+      ================================= */}
+
       <div className="auth-visual">
+
         <img
           src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=85"
           alt="Mountain landscape"
@@ -62,41 +77,73 @@ function Login() {
 
         <div className="auth-visual-overlay" />
 
-        <Link to="/" className="auth-brand">
+        <Link
+          to="/register"
+          className="auth-brand"
+        >
           <MapPin size={22} />
           <span>Voyage Mate</span>
         </Link>
 
         <div className="auth-quote">
+
           <Sparkles size={20} />
+
           <h2>
             The world is waiting.
             <br />
             Let's plan your next story.
           </h2>
+
           <p>
-            Discover places, build unforgettable itineraries, and travel
-            with everything organized in one place.
+            Discover places, build unforgettable
+            itineraries, and travel with everything
+            organized in one place.
           </p>
+
         </div>
       </div>
 
+      {/* ================================
+          RIGHT LOGIN SECTION
+      ================================= */}
+
       <div className="auth-panel">
+
         <div className="auth-form-container">
+
           <div className="auth-heading">
+
             <span>WELCOME BACK</span>
-            <h1>Let's continue your journey.</h1>
+
+            <h1>
+              Let's continue your journey.
+            </h1>
+
             <p>
-              Sign in to access your trips and continue planning.
+              Sign in to access your trips and
+              continue planning.
             </p>
+
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form
+            onSubmit={handleSubmit}
+            className="auth-form"
+          >
+
+            {/* EMAIL */}
+
             <div className="form-field">
-              <label htmlFor="email">Email address</label>
+
+              <label htmlFor="email">
+                Email address
+              </label>
 
               <div className="input-with-icon">
+
                 <Mail size={18} />
+
                 <input
                   id="email"
                   name="email"
@@ -106,24 +153,47 @@ function Login() {
                   onChange={handleChange}
                   autoComplete="email"
                 />
+
               </div>
+
             </div>
 
+            {/* PASSWORD */}
+
             <div className="form-field">
+
               <div className="password-label-row">
-                <label htmlFor="password">Password</label>
-                <button type="button">
+
+                <label htmlFor="password">
+                  Password
+                </label>
+
+                {/* Forgot password will be implemented next */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(
+                      "Password reset is not available yet."
+                    );
+                  }}
+                >
                   Forgot password?
                 </button>
+
               </div>
 
               <div className="input-with-icon">
+
                 <LockKeyhole size={18} />
 
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? "text" : "password"}
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
                   placeholder="Enter your password"
                   value={form.password}
                   onChange={handleChange}
@@ -134,7 +204,9 @@ function Login() {
                   type="button"
                   className="password-toggle"
                   onClick={() =>
-                    setShowPassword((current) => !current)
+                    setShowPassword(
+                      (current) => !current
+                    )
                   }
                   aria-label={
                     showPassword
@@ -148,30 +220,56 @@ function Login() {
                     <Eye size={18} />
                   )}
                 </button>
+
               </div>
+
             </div>
 
-            {error && <div className="auth-error">{error}</div>}
+            {/* ERROR */}
+
+            {error && (
+              <div className="auth-error">
+                {error}
+              </div>
+            )}
+
+            {/* LOGIN BUTTON */}
 
             <button
               type="submit"
               className="auth-submit-button"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign in"}
-              {!loading && <ArrowRight size={18} />}
+              {loading
+                ? "Signing in..."
+                : "Sign in"}
+
+              {!loading && (
+                <ArrowRight size={18} />
+              )}
             </button>
+
           </form>
 
+          {/* REGISTER LINK */}
+
           <div className="auth-divider">
-            <span>New to Voyage Mate?</span>
+            <span>
+              New to Voyage Mate?
+            </span>
           </div>
 
-          <Link to="/register" className="auth-switch-link">
+          <Link
+            to="/register"
+            className="auth-switch-link"
+          >
             Create your account
           </Link>
+
         </div>
+
       </div>
+
     </div>
   );
 }
