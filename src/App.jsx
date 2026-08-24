@@ -1,14 +1,23 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Public pages
 import Home from "./pages/Home";
 import Explore from "./pages/Explore";
-import Trips from "./pages/Trips";
-import TripDetails from "./pages/TripDetails";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+// Protected pages
+import Trips from "./pages/Trips";
+import TripDetails from "./pages/TripDetails";
 import Profile from "./pages/Profile";
 
 function App() {
@@ -18,18 +27,19 @@ function App() {
 
         <Route element={<MainLayout />}>
 
-          {/* =========================
-              FIRST PAGE
-          ========================== */}
+          {/* =================================
+              PUBLIC PAGES
+          ================================== */}
 
           <Route
             path="/"
-            element={<Navigate to="/register" replace />}
+            element={<Home />}
           />
 
-          {/* =========================
-              PUBLIC PAGES
-          ========================== */}
+          <Route
+            path="/explore"
+            element={<Explore />}
+          />
 
           <Route
             path="/login"
@@ -41,25 +51,29 @@ function App() {
             element={<Register />}
           />
 
-          {/* =========================
-              PUBLIC EXPLORE
-          ========================== */}
-
           <Route
-            path="/explore"
-            element={<Explore />}
+            path="/forgot-password"
+            element={<ForgotPassword />}
           />
 
-          {/* =========================
+          {/* 
+            IMPORTANT:
+            The reset token comes from the
+            email link:
+
+            /reset-password/TOKEN
+          */}
+
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPassword />}
+          />
+
+          {/* =================================
               PROTECTED PAGES
-          ========================== */}
+          ================================== */}
 
           <Route element={<ProtectedRoute />}>
-
-            <Route
-              path="/home"
-              element={<Home />}
-            />
 
             <Route
               path="/trips"

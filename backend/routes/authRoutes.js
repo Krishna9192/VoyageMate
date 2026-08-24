@@ -3,6 +3,8 @@ const express = require("express");
 const {
   registerUser,
   loginUser,
+  forgotPassword,
+  resetPassword,
   getProfile,
   updateProfile,
   changePassword,
@@ -17,12 +19,29 @@ const router = express.Router();
 // PUBLIC AUTH ROUTES
 // ==========================================
 
-router.post("/register", registerUser);
+router.post(
+  "/register",
+  registerUser
+);
 
-router.post("/login", loginUser);
+router.post(
+  "/login",
+  loginUser
+);
+
+router.post(
+  "/forgot-password",
+  forgotPassword
+);
+
+// Reset password using token from email
+router.post(
+  "/reset-password/:token",
+  resetPassword
+);
 
 // ==========================================
-// PROTECTED USER ROUTES
+// PROTECTED ACCOUNT ROUTES
 // ==========================================
 
 router.get(

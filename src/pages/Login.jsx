@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import {
   ArrowRight,
   Eye,
@@ -9,11 +14,13 @@ import {
   MapPin,
   Sparkles,
 } from "lucide-react";
+
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const { login, loading } = useAuth();
 
   const [form, setForm] = useState({
@@ -21,23 +28,49 @@ function Login() {
     password: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [message, setMessage] =
+    useState(
+      location.state?.message || ""
+    );
+
+  // ==========================================
+  // HANDLE INPUT CHANGES
+  // ==========================================
 
   const handleChange = (event) => {
     setForm({
       ...form,
-      [event.target.name]: event.target.value,
+      [event.target.name]:
+        event.target.value,
     });
 
     setError("");
+    setMessage("");
   };
+
+  // ==========================================
+  // HANDLE LOGIN
+  // ==========================================
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.email || !form.password) {
-      setError("Please enter your email and password.");
+    setError("");
+    setMessage("");
+
+    if (
+      !form.email.trim() ||
+      !form.password
+    ) {
+      setError(
+        "Please enter your email and password."
+      );
       return;
     }
 
@@ -51,10 +84,15 @@ function Login() {
       return;
     }
 
-    // If the user was redirected to login from
-    // a protected page, return them there.
-    // Otherwise go to the protected Home page.
-    const destination = location.state?.from || "/home";
+    /*
+     * If the user was redirected to login
+     * from a protected page, return there.
+     *
+     * Otherwise go to the main Home page.
+     */
+
+    const destination =
+      location.state?.from || "/";
 
     navigate(destination, {
       replace: true,
@@ -64,9 +102,9 @@ function Login() {
   return (
     <div className="auth-page">
 
-      {/* ================================
+      {/* =====================================
           LEFT VISUAL SECTION
-      ================================= */}
+      ====================================== */}
 
       <div className="auth-visual">
 
@@ -77,12 +115,16 @@ function Login() {
 
         <div className="auth-visual-overlay" />
 
+        {/* Clicking logo goes to HOME */}
         <Link
-          to="/register"
+          to="/"
           className="auth-brand"
         >
           <MapPin size={22} />
-          <span>Voyage Mate</span>
+
+          <span>
+            Voyage Mate
+          </span>
         </Link>
 
         <div className="auth-quote">
@@ -96,43 +138,57 @@ function Login() {
           </h2>
 
           <p>
-            Discover places, build unforgettable
-            itineraries, and travel with everything
+            Discover places, build
+            unforgettable itineraries,
+            and travel with everything
             organized in one place.
           </p>
 
         </div>
+
       </div>
 
-      {/* ================================
+      {/* =====================================
           RIGHT LOGIN SECTION
-      ================================= */}
+      ====================================== */}
 
       <div className="auth-panel">
 
         <div className="auth-form-container">
 
+          {/* =================================
+              HEADING
+          ================================= */}
+
           <div className="auth-heading">
 
-            <span>WELCOME BACK</span>
+            <span>
+              WELCOME BACK
+            </span>
 
             <h1>
               Let's continue your journey.
             </h1>
 
             <p>
-              Sign in to access your trips and
-              continue planning.
+              Sign in to access your trips
+              and continue planning.
             </p>
 
           </div>
+
+          {/* =================================
+              LOGIN FORM
+          ================================= */}
 
           <form
             onSubmit={handleSubmit}
             className="auth-form"
           >
 
-            {/* EMAIL */}
+            {/* ===============================
+                EMAIL
+            ================================ */}
 
             <div className="form-field">
 
@@ -158,7 +214,9 @@ function Login() {
 
             </div>
 
-            {/* PASSWORD */}
+            {/* ===============================
+                PASSWORD
+            ================================ */}
 
             <div className="form-field">
 
@@ -168,17 +226,14 @@ function Login() {
                   Password
                 </label>
 
-                {/* Forgot password will be implemented next */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError(
-                      "Password reset is not available yet."
-                    );
-                  }}
+                {/* REAL FORGOT PASSWORD LINK */}
+
+                <Link
+                  to="/forgot-password"
+                  className="forgot-password-link"
                 >
                   Forgot password?
-                </button>
+                </Link>
 
               </div>
 
@@ -200,12 +255,15 @@ function Login() {
                   autoComplete="current-password"
                 />
 
+                {/* SHOW / HIDE PASSWORD */}
+
                 <button
                   type="button"
                   className="password-toggle"
                   onClick={() =>
                     setShowPassword(
-                      (current) => !current
+                      (current) =>
+                        !current
                     )
                   }
                   aria-label={
@@ -225,7 +283,19 @@ function Login() {
 
             </div>
 
-            {/* ERROR */}
+            {/* ===============================
+                SUCCESS MESSAGE
+            ================================ */}
+
+            {message && (
+              <div className="auth-success">
+                {message}
+              </div>
+            )}
+
+            {/* ===============================
+                ERROR MESSAGE
+            ================================ */}
 
             {error && (
               <div className="auth-error">
@@ -233,13 +303,16 @@ function Login() {
               </div>
             )}
 
-            {/* LOGIN BUTTON */}
+            {/* ===============================
+                LOGIN BUTTON
+            ================================ */}
 
             <button
               type="submit"
               className="auth-submit-button"
               disabled={loading}
             >
+
               {loading
                 ? "Signing in..."
                 : "Sign in"}
@@ -247,11 +320,14 @@ function Login() {
               {!loading && (
                 <ArrowRight size={18} />
               )}
+
             </button>
 
           </form>
 
-          {/* REGISTER LINK */}
+          {/* =================================
+              REGISTER SECTION
+          ================================== */}
 
           <div className="auth-divider">
             <span>

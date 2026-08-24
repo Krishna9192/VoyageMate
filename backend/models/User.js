@@ -2,13 +2,19 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ==========================================
+    // USER NAME
+    // ==========================================
+
     name: {
       type: String,
       required: true,
       trim: true,
-      minlength: 2,
-      maxlength: 50,
     },
+
+    // ==========================================
+    // EMAIL
+    // ==========================================
 
     email: {
       type: String,
@@ -18,6 +24,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================================
+    // PASSWORD
+    // ==========================================
+
     password: {
       type: String,
       required: true,
@@ -25,9 +35,27 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    // ==========================================
+    // AVATAR
+    // ==========================================
+
     avatar: {
       type: String,
       default: "",
+    },
+
+    // ==========================================
+    // PASSWORD RESET
+    // ==========================================
+
+    resetPasswordToken: {
+      type: String,
+      default: undefined,
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+      default: undefined,
     },
   },
   {
@@ -35,4 +63,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);

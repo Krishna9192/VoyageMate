@@ -1,8 +1,16 @@
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const User = require("../models/User");
 const Trip = require("../models/Trip");
 const Itinerary = require("../models/Itinerary");
+
+const sendEmail = require("../utils/emailService");
+
+// ==========================================
+// GENERATE JWT TOKEN
+// ==========================================
 
 const generateToken = (userId) => {
   return jwt.sign(
@@ -53,10 +61,8 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      12
-    );
+    const hashedPassword =
+      await bcrypt.hash(password, 12);
 
     const user = await User.create({
       name: name.trim(),
@@ -162,6 +168,258 @@ const loginUser = async (req, res) => {
 };
 
 // ==========================================
+// FORGOT PASSWORD
+// ==========================================
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email address is required",
+      });
+    }
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No account found with this email address",
+      });
+    }
+
+    // Generate reset token
+    const resetToken =
+      crypto.randomBytes(32).toString("hex");
+
+    // Hash token before storing in database
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+
+    // Token valid for 15 minutes
+    user.resetPasswordExpire =
+      Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    // Frontend URL
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      "https://voyagemate.onrender.com";
+
+    const resetUrl =
+      `${frontendUrl}/reset-password/${resetToken}`;
+
+    // Email HTML
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>Reset Password</title>
+        </head>
+
+        <body
+          style="
+            margin: 0;
+            padding: 0;
+            background: #f5f7f8;
+            font-family: Arial, sans-serif;
+          "
+        >
+          <div
+            style="
+              max-width: 600px;
+              margin: 40px auto;
+              background: white;
+              padding: 40px;
+              border-radius: 12px;
+            "
+          >
+
+            <h1 style="color: #087f98;">
+              Voyage Mate
+            </h1>
+
+            <h2>
+              Reset your password
+            </h2>
+
+            <p>
+              We received a request to reset
+              your Voyage Mate password.
+            </p>
+
+            <p>
+              Click the button below to create
+              a new password.
+            </p>
+
+            <div style="margin: 30px 0;">
+
+              <a
+                href="${resetUrl}"
+                style="
+                  display: inline-block;
+                  padding: 14px 24px;
+                  background: #078ca5;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 8px;
+                  font-weight: bold;
+                "
+              >
+                Reset Password
+              </a>
+
+            </div>
+
+            <p>
+              This reset link will expire
+              in 15 minutes.
+            </p>
+
+            <p>
+              If you did not request this,
+              you can safely ignore this email.
+            </p>
+
+            <p>
+              — Voyage Mate
+            </p>
+
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Send email
+    await sendEmail({
+      to: user.email,
+      subject:
+        "Reset your Voyage Mate password",
+      html,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Password reset link has been sent to your email",
+    });
+  } catch (error) {
+    console.error(
+      "Forgot password error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to send password reset email",
+    });
+  }
+};
+
+// ==========================================
+// RESET PASSWORD
+// ==========================================
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password reset token is required",
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password is required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must contain at least 6 characters",
+      });
+    }
+
+    // Hash token received from email
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {
+        $gt: Date.now(),
+      },
+    }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password reset link is invalid or expired",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword =
+      await bcrypt.hash(password, 12);
+
+    user.password = hashedPassword;
+
+    // Remove reset token
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Password reset successfully. You can now sign in.",
+    });
+  } catch (error) {
+    console.error(
+      "Reset password error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Unable to reset password",
+    });
+  }
+};
+
+// ==========================================
 // GET PROFILE
 // ==========================================
 
@@ -196,7 +454,8 @@ const getProfile = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Unable to fetch profile",
+      message:
+        "Unable to fetch profile",
     });
   }
 };
@@ -207,7 +466,11 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name, email, avatar } = req.body;
+    const {
+      name,
+      email,
+      avatar,
+    } = req.body;
 
     const user = await User.findById(
       req.user._id
@@ -224,7 +487,8 @@ const updateProfile = async (req, res) => {
       if (!name.trim()) {
         return res.status(400).json({
           success: false,
-          message: "Name cannot be empty",
+          message:
+            "Name cannot be empty",
         });
       }
 
@@ -238,14 +502,17 @@ const updateProfile = async (req, res) => {
       if (!normalizedEmail) {
         return res.status(400).json({
           success: false,
-          message: "Email cannot be empty",
+          message:
+            "Email cannot be empty",
         });
       }
 
       const existingUser =
         await User.findOne({
           email: normalizedEmail,
-          _id: { $ne: user._id },
+          _id: {
+            $ne: user._id,
+          },
         });
 
       if (existingUser) {
@@ -285,7 +552,8 @@ const updateProfile = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Unable to update profile",
+      message:
+        "Unable to update profile",
     });
   }
 };
@@ -301,7 +569,10 @@ const changePassword = async (req, res) => {
       newPassword,
     } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    if (
+      !currentPassword ||
+      !newPassword
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -356,10 +627,11 @@ const changePassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(
-      newPassword,
-      12
-    );
+    user.password =
+      await bcrypt.hash(
+        newPassword,
+        12
+      );
 
     await user.save();
 
@@ -418,7 +690,8 @@ const deleteAccount = async (req, res) => {
     if (!passwordMatches) {
       return res.status(401).json({
         success: false,
-        message: "Incorrect password",
+        message:
+          "Incorrect password",
       });
     }
 
@@ -460,6 +733,8 @@ const deleteAccount = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  forgotPassword,
+  resetPassword,
   getProfile,
   updateProfile,
   changePassword,
