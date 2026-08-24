@@ -25,33 +25,42 @@ const registerUser = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name, email and password are required",
+        message:
+          "Name, email and password are required",
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "Password must contain at least 6 characters",
+        message:
+          "Password must contain at least 6 characters",
       });
     }
 
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
     const existingUser = await User.findOne({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
     });
 
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: "An account with this email already exists",
+        message:
+          "An account with this email already exists",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      12
+    );
 
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
@@ -69,11 +78,15 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Register error:", error.message);
+    console.error(
+      "Register error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while creating your account",
+      message:
+        "Something went wrong while creating your account",
     });
   }
 };
@@ -89,12 +102,16 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
 
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
     const user = await User.findOne({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
     }).select("+password");
 
     if (!user) {
@@ -104,10 +121,11 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const passwordMatches =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!passwordMatches) {
       return res.status(401).json({
@@ -130,11 +148,15 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error.message);
+    console.error(
+      "Login error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while logging in",
+      message:
+        "Something went wrong while logging in",
     });
   }
 };
@@ -145,7 +167,9 @@ const loginUser = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(
+      req.user._id
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -165,7 +189,10 @@ const getProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get profile error:", error.message);
+    console.error(
+      "Get profile error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
@@ -182,7 +209,9 @@ const updateProfile = async (req, res) => {
   try {
     const { name, email, avatar } = req.body;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(
+      req.user._id
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -203,7 +232,8 @@ const updateProfile = async (req, res) => {
     }
 
     if (email !== undefined) {
-      const normalizedEmail = email.toLowerCase().trim();
+      const normalizedEmail =
+        email.trim().toLowerCase();
 
       if (!normalizedEmail) {
         return res.status(400).json({
@@ -212,15 +242,17 @@ const updateProfile = async (req, res) => {
         });
       }
 
-      const existingUser = await User.findOne({
-        email: normalizedEmail,
-        _id: { $ne: user._id },
-      });
+      const existingUser =
+        await User.findOne({
+          email: normalizedEmail,
+          _id: { $ne: user._id },
+        });
 
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: "An account with this email already exists",
+          message:
+            "An account with this email already exists",
         });
       }
 
@@ -235,7 +267,8 @@ const updateProfile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Profile updated successfully",
+      message:
+        "Profile updated successfully",
       user: {
         id: user._id,
         name: user.name,
@@ -245,7 +278,10 @@ const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update profile error:", error.message);
+    console.error(
+      "Update profile error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
@@ -281,9 +317,9 @@ const changePassword = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id).select(
-      "+password"
-    );
+    const user = await User.findById(
+      req.user._id
+    ).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -292,22 +328,25 @@ const changePassword = async (req, res) => {
       });
     }
 
-    const passwordMatches = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
+    const passwordMatches =
+      await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
 
     if (!passwordMatches) {
       return res.status(401).json({
         success: false,
-        message: "Current password is incorrect",
+        message:
+          "Current password is incorrect",
       });
     }
 
-    const samePassword = await bcrypt.compare(
-      newPassword,
-      user.password
-    );
+    const samePassword =
+      await bcrypt.compare(
+        newPassword,
+        user.password
+      );
 
     if (samePassword) {
       return res.status(400).json({
@@ -317,20 +356,28 @@ const changePassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(newPassword, 12);
+    user.password = await bcrypt.hash(
+      newPassword,
+      12
+    );
 
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: "Password changed successfully",
+      message:
+        "Password changed successfully",
     });
   } catch (error) {
-    console.error("Change password error:", error.message);
+    console.error(
+      "Change password error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to change password",
+      message:
+        "Unable to change password",
     });
   }
 };
@@ -346,13 +393,14 @@ const deleteAccount = async (req, res) => {
     if (!password) {
       return res.status(400).json({
         success: false,
-        message: "Password is required to delete your account",
+        message:
+          "Password is required to delete your account",
       });
     }
 
-    const user = await User.findById(req.user._id).select(
-      "+password"
-    );
+    const user = await User.findById(
+      req.user._id
+    ).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -361,10 +409,11 @@ const deleteAccount = async (req, res) => {
       });
     }
 
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const passwordMatches =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!passwordMatches) {
       return res.status(401).json({
@@ -373,29 +422,33 @@ const deleteAccount = async (req, res) => {
       });
     }
 
-    // Delete all itineraries belonging to the user
     await Itinerary.deleteMany({
       user: user._id,
     });
 
-    // Delete all trips belonging to the user
     await Trip.deleteMany({
       user: user._id,
     });
 
-    // Finally delete the user
-    await User.findByIdAndDelete(user._id);
+    await User.findByIdAndDelete(
+      user._id
+    );
 
     return res.status(200).json({
       success: true,
-      message: "Account deleted successfully",
+      message:
+        "Account deleted successfully",
     });
   } catch (error) {
-    console.error("Delete account error:", error.message);
+    console.error(
+      "Delete account error:",
+      error.message
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to delete account",
+      message:
+        "Unable to delete account",
     });
   }
 };

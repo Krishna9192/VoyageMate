@@ -8,7 +8,8 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
-const API_URL = "http://localhost:5000/api";
+// Production backend API
+const API_URL = "https://voyagemate-api.onrender.com/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -37,10 +38,9 @@ export function AuthProvider({ children }) {
 
   const [loading, setLoading] = useState(false);
 
-  /*
-   * Keep authentication data synchronized
-   * with localStorage.
-   */
+  // ==========================================
+  // KEEP AUTH DATA IN LOCAL STORAGE
+  // ==========================================
 
   useEffect(() => {
     if (user) {
@@ -66,9 +66,9 @@ export function AuthProvider({ children }) {
     }
   }, [user, token]);
 
-  /*
-   * Register
-   */
+  // ==========================================
+  // REGISTER
+  // ==========================================
 
   const register = async (
     name,
@@ -116,9 +116,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  /*
-   * Login
-   */
+  // ==========================================
+  // LOGIN
+  // ==========================================
 
   const login = async (
     email,
@@ -164,9 +164,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  /*
-   * Logout
-   */
+  // ==========================================
+  // LOGOUT
+  // ==========================================
 
   const logout = () => {
     setUser(null);
@@ -181,9 +181,9 @@ export function AuthProvider({ children }) {
     );
   };
 
-  /*
-   * Update user information
-   */
+  // ==========================================
+  // UPDATE USER
+  // ==========================================
 
   const updateUser = (updatedUser) => {
     setUser((currentUser) => ({
@@ -192,8 +192,16 @@ export function AuthProvider({ children }) {
     }));
   };
 
+  // ==========================================
+  // AUTHENTICATION STATUS
+  // ==========================================
+
   const isAuthenticated =
     Boolean(token && user);
+
+  // ==========================================
+  // PROVIDER
+  // ==========================================
 
   return (
     <AuthContext.Provider
@@ -212,6 +220,10 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+// ==========================================
+// useAuth HOOK
+// ==========================================
 
 export function useAuth() {
   const context =
