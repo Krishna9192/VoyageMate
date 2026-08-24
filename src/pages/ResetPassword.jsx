@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 
 import axios from "axios";
+import { API_BASE_URL } from "../services/api";
 
-const API_URL =
-  "https://voyagemate-api.onrender.com/api";
+const API_URL = API_BASE_URL;
 
 function ResetPassword() {
   const { token } = useParams();

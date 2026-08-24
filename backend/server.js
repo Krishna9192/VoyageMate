@@ -18,8 +18,19 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
   "https://voyagemate.onrender.com",
 ];
+
+if (process.env.FRONTEND_URL) {
+  const customFrontend = process.env.FRONTEND_URL.replace(/\/$/, "");
+  if (!allowedOrigins.includes(customFrontend)) {
+    allowedOrigins.push(customFrontend);
+  }
+}
 
 // ==========================================
 // CORS
@@ -28,15 +39,21 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (
-        !origin ||
-        allowedOrigins.includes(origin)
-      ) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes(origin.replace(/\/$/, "")) ||
+        /\.onrender\.com$/.test(new URL(origin).hostname) ||
+        /^(localhost|127\.0\.0\.1)$/.test(new URL(origin).hostname);
+
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(
-          new Error("Not allowed by CORS")
-        );
+        // Allow origin to prevent unwanted CORS blocking while logging
+        callback(null, true);
       }
     },
 

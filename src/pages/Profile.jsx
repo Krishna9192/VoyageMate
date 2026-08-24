@@ -15,8 +15,9 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL } from "../services/api";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = API_BASE_URL;
 
 function Profile() {
   const navigate = useNavigate();

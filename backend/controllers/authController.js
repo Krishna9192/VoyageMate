@@ -215,10 +215,21 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    // Frontend URL
-    const frontendUrl =
-      process.env.FRONTEND_URL ||
-      "https://voyagemate.onrender.com";
+    // Dynamically determine Frontend URL (Origin > Referer > Env > Default)
+    let frontendUrl = process.env.FRONTEND_URL;
+    const requestOrigin = req.get("origin") || req.get("referer");
+    if (requestOrigin) {
+      try {
+        const parsed = new URL(requestOrigin);
+        frontendUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch (_) {
+        // use fallback if URL parsing fails
+      }
+    }
+    if (!frontendUrl) {
+      frontendUrl = "https://voyagemate.onrender.com";
+    }
+    frontendUrl = frontendUrl.replace(/\/$/, "");
 
     const resetUrl =
       `${frontendUrl}/reset-password/${resetToken}`;
@@ -328,6 +339,7 @@ const forgotPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
+        error.message ||
         "Unable to send password reset email",
     });
   }

@@ -5,11 +5,11 @@ import {
   useState,
 } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../services/api";
 
 const AuthContext = createContext();
 
-// Production backend API
-const API_URL = "https://voyagemate-api.onrender.com/api";
+const API_URL = API_BASE_URL;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
