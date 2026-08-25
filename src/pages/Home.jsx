@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   CalendarDays,
@@ -8,6 +10,42 @@ import {
 } from "lucide-react";
 
 function Home() {
+  const navigate = useNavigate();
+  const [destination, setDestination] = useState("");
+  const [travelDates, setTravelDates] = useState("");
+
+  const handleStartPlanning = (prefillDest = "") => {
+    const dest = prefillDest || destination.trim();
+    const params = new URLSearchParams();
+    params.set("newTrip", "true");
+
+    if (dest) {
+      params.set("destination", dest);
+      sessionStorage.setItem("voyageMatePrefillDestination", dest);
+    }
+    sessionStorage.setItem("voyageMateAutoOpenTrip", "true");
+
+    navigate(`/trips?${params.toString()}`);
+  };
+
+  const handleExplore = (prefillDest = "") => {
+    const dest = prefillDest || destination.trim();
+    if (dest) {
+      navigate(`/explore?query=${encodeURIComponent(dest)}`);
+    } else {
+      navigate("/explore");
+    }
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    if (destination.trim()) {
+      handleExplore(destination.trim());
+    } else {
+      navigate("/explore?search=true");
+    }
+  };
+
   return (
     <div className="home-page">
       <section className="hero-section">
@@ -30,12 +68,20 @@ function Home() {
           </p>
 
           <div className="hero-actions">
-            <button className="primary-button">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => handleStartPlanning()}
+            >
               Start Planning
               <ArrowRight size={18} />
             </button>
 
-            <button className="secondary-button">
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => handleExplore()}
+            >
               <Compass size={18} />
               Explore Destinations
             </button>
@@ -51,7 +97,13 @@ function Home() {
 
             <div className="image-overlay"></div>
 
-            <div className="floating-location-card">
+            <div
+              className="floating-location-card clickable"
+              onClick={() => handleExplore("Swiss Alps")}
+              title="Explore Swiss Alps"
+              role="button"
+              tabIndex={0}
+            >
               <div className="location-icon">
                 <MapPin size={18} />
               </div>
@@ -79,14 +131,17 @@ function Home() {
           <h2>Find your next adventure</h2>
         </div>
 
-        <div className="destination-search">
+        <form className="destination-search" onSubmit={handleSearchSubmit}>
           <div className="search-input-wrapper">
             <MapPin size={20} />
             <div>
-              <label>Destination</label>
+              <label htmlFor="home-destination-input">Destination</label>
               <input
+                id="home-destination-input"
                 type="text"
                 placeholder="Where do you want to go?"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
               />
             </div>
           </div>
@@ -94,19 +149,22 @@ function Home() {
           <div className="search-input-wrapper">
             <CalendarDays size={20} />
             <div>
-              <label>Travel dates</label>
+              <label htmlFor="home-dates-input">Travel dates</label>
               <input
+                id="home-dates-input"
                 type="text"
                 placeholder="Choose your dates"
+                value={travelDates}
+                onChange={(e) => setTravelDates(e.target.value)}
               />
             </div>
           </div>
 
-          <button className="search-button">
+          <button className="search-button" type="submit">
             <Search size={19} />
             Search
           </button>
-        </div>
+        </form>
       </section>
 
       <section className="features-section">
@@ -120,7 +178,12 @@ function Home() {
         </div>
 
         <div className="feature-grid">
-          <div className="feature-card feature-card-large">
+          <div
+            className="feature-card feature-card-large clickable"
+            onClick={() => handleExplore()}
+            role="button"
+            tabIndex={0}
+          >
             <div className="feature-icon">
               <Compass size={23} />
             </div>
@@ -131,7 +194,12 @@ function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
+          <div
+            className="feature-card clickable"
+            onClick={() => handleStartPlanning()}
+            role="button"
+            tabIndex={0}
+          >
             <div className="feature-icon">
               <CalendarDays size={23} />
             </div>
@@ -142,7 +210,12 @@ function Home() {
             </p>
           </div>
 
-          <div className="feature-card">
+          <div
+            className="feature-card clickable"
+            onClick={() => navigate("/trips")}
+            role="button"
+            tabIndex={0}
+          >
             <div className="feature-icon">
               <MapPin size={23} />
             </div>
@@ -161,7 +234,11 @@ function Home() {
           <h2>Let's plan somewhere unforgettable.</h2>
         </div>
 
-        <button className="primary-button">
+        <button
+          className="primary-button"
+          type="button"
+          onClick={() => handleStartPlanning()}
+        >
           Create a Trip
           <ArrowRight size={18} />
         </button>

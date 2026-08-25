@@ -133,11 +133,21 @@ function Explore() {
       window.location.search
     );
 
-    if (params.get("search") === "true") {
+    const queryParam = params.get("query");
+    const searchParam = params.get("search");
+
+    if (queryParam) {
+      // Pre-fill search from Home page destination input
+      setQuery(queryParam);
+      searchLocation(queryParam);
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 150);
-
+      return () => clearTimeout(timer);
+    } else if (searchParam === "true") {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 150);
       return () => clearTimeout(timer);
     }
   }, []);

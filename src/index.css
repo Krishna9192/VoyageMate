@@ -527,6 +527,21 @@ main {
   box-shadow: var(--shadow-md);
 }
 
+.clickable {
+  cursor: pointer;
+  outline: none;
+}
+
+.clickable:focus-visible {
+  box-shadow: 0 0 0 3px rgba(23, 107, 135, 0.3);
+}
+
+.floating-location-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
 .feature-card-large {
   background: linear-gradient(145deg, #eaf5f6, #ffffff);
 }
